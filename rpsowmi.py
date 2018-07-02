@@ -121,7 +121,7 @@ Unregister-Event -SourceIdentifier $evt_stdout.Name
 Unregister-Event -SourceIdentifier $evt_stderr.Name
 
 $xml = [XML]@'
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="{XML_ENCODING}"?>
 <!DOCTYPE Result [
     <!ELEMENT output (#PCDATA)>
     <!ATTLIST output id ID #IMPLIED>
@@ -255,7 +255,8 @@ def PipeServerConnection(address, readable, writable,
 
 class RemotePowerShellOverWmi(object):
     def __init__(self, wmiconn, localhost=".", timeout=60, logfile="$NUL",
-                 code_on_exc=255, logger=getLogger("RPSoWMI")):
+                 code_on_exc=255, logger=getLogger("RPSoWMI"),
+                 ps_cmd="powershell.exe", encoding='cp866', xml_encoding='windows-1251'):
         """Enable you to execute PowerShell script on remote host via WMI.
 
         :param wmiconn: Any object behaving like wmi.WMI().
@@ -281,6 +282,18 @@ class RemotePowerShellOverWmi(object):
 
         :param logger: Logger to be used for debug logging.
         :type logger: logging.Logger
+
+        :param ps_cmd: PowerShell path to be executed
+        :type ps_cmd: str
+
+        :param encoding: encoding to work with in PowerShell
+        :type encoding: str
+
+        :param xml_encoding: encoding to work with in XML file
+            that is used to process all PS data.
+            It HAS TO BE equal to encoding (NOT the same string BUT the same encoding)
+            ('cp866' is the name and 'windows-1251' is Windows code page)
+        :type xml_encoding: str
         """
         assert all([  # Minimum requirements of wmiconn object
             hasattr(wmiconn, "Win32_ProcessStartup"),
@@ -297,11 +310,12 @@ class RemotePowerShellOverWmi(object):
         self.logfile = logfile
         self.code_on_exc = code_on_exc
         self.logger = logger
-        self.encoding = "utf-8"
-        self.ps_cmd = "powershell.exe"
+        self.encoding = encoding
+        self.xml_encoding = xml_encoding
+        self.ps_cmd = ps_cmd
         self.ps_opts = "-NonInteractive -NoProfile -NoLogo -encodedCommand"
         self.no_stdin = "-InputFormat none"
-        self.ps_encoding = "[System.Text.Encoding]::UTF8"
+        self.ps_encoding = '[System.Text.Encoding]::GetEncoding("{}")'.format(encoding)
         self.ps_prepend = (
             "[Console]::OutputEncoding = {ENCODING};"
             "[Console]::InputEncoding = {ENCODING};"
@@ -415,6 +429,7 @@ class RemotePowerShellOverWmi(object):
             NPIPE_OUT=self.npipe_out.rsplit("\\", 1)[-1],
             LOGFILE=self.logfile,
             ENCODING=self.ps_encoding,
+            XML_ENCODING=self.xml_encoding,
             TIMEOUT="" if not self.timeout else int(self.timeout * 1000),
             CODE_ON_EXC=self.code_on_exc,
         ))
