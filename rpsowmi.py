@@ -19,10 +19,7 @@ from uuid import uuid4
 from xml.dom.minidom import parseString
 
 
-VERSION = (2017, 4, 11)
-VERSION_TEXT = ".".join(map(str, VERSION))
-
-__version__ = VERSION_TEXT
+__version__ = 'v0.1'
 __license__ = "MIT"
 __author__ = "Youhei Sakurai"
 __email__ = "sakurai.youhei@gmail.com"

@@ -10,8 +10,14 @@ Communication with your PowerShell code is done through 2 named pipes (one for o
 
 Getting started:
 
-```bash
-pip install WMI, rpsowmi
+```powershell
+pip install WMI
+pip install git+https://github.com/surik00/rpsowmi.git
+
+# OR:
+# 1. download archive: https://github.com/surik00/rpsowmi/releases/tag/v0.1
+# 2. Unarchive, go to dir
+python .\setup.py install
 ```
 
 
